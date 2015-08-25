@@ -2,6 +2,7 @@
 set -x
 #DNSSERVER="129.176.199.5"
 #DNSDOMAIN="mayo.edu"
+#exec 3>&1 4>&2 >master.log 2>&1
 export THISHOSTIP=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 #Set the hostname
 HOSTNAME="host-$(echo $THISHOSTIP | sed 's/\./\-/g')"
@@ -55,4 +56,8 @@ then
 fi
 EOF
 
-echo "Done..."
+echo $MINIONIPS
+IPS=$(echo $MINIONIPS | sed "s/u'[0-9]*'://g" | sed -r "s/[{u',}]+//g")
+echo $IPS
+#restore stdout and stderr
+#exec 1>&3 2>&4
