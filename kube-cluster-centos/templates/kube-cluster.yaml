@@ -14,9 +14,14 @@ parameters:
     type: string
     description: Type of the instance to be created.
     default: m1.small
-  master_count:
-    type: number
-    default: 1
+  private_net:
+    type: string
+    description: private network name into which servers get deployed
+    default: private
+  public_net:
+    type: string
+    description: public network name for which floating IP addresses will be allocated
+    default: public
   minion_count:
     type: number
     default: 2
@@ -98,34 +103,36 @@ resources:
         #exec 1>&3 2>&4
    
   deploys:
-    type: OS::Heat::SoftwareDeployments
+    type: OS::Heat::SoftwareDeployment
     properties:
       signal_transport: HEAT_SIGNAL
       input_values:
         MINIONIPS: {get_attr: [minion_servers, attributes, first_address]}
-      servers: {get_attr: [masters, attributes, show, id]}
+      server: {get_resource: master }
       config: {get_resource: shared_config }
 
-  masters:
-    type: OS::Heat::ResourceGroup
+  master:
+    type: OS::Nova::Server
     properties:
-      count: {get_param: master_count}
-      resource_def:
-        type: OS::Nova::Server
-        properties:
-          # The "%index%" in the name property is only available since Juno
-          name: kube-master%index%
-          image: { get_param: image}
-          key_name: { get_param: key_name }
-          flavor: { get_param: flavor }
-          user_data_format: SOFTWARE_CONFIG
+      # The "%index%" in the name property is only available since Juno
+      name: kube-master
+      image: { get_param: image}
+      key_name: { get_param: key_name }
+      flavor: { get_param: flavor }
+      user_data_format: SOFTWARE_CONFIG
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: public
+      port_id: {get_attr: [master, addresses, private, 0, port]}
 
   minion_shared_config:
     type: OS::Heat::SoftwareConfig
     properties:
       group: script
       inputs:
-        - name: MASTERIPS
+        - name: MASTERIP
           default: 'NONE'
         - name: DNSSERVER
           default: '129.176.199.5'
@@ -190,9 +197,8 @@ resources:
         fi
         EOF
                    
-        #exec 3>&1 4>&2 >minion.log 2>&1
-        echo $MASTERIPS
-        IPS=$(echo $MASTERIPS | sed "s/u'[0-9]*'://g" | sed -r "s/[{u',}]+//g")
+        echo $MASTERIP
+        IPS=$(echo $MASTERIP | sed 's/\"//g') 
         echo $IPS
         #restore stdout and stderr
         #exec 1>&3 2>&4
@@ -202,7 +208,7 @@ resources:
     properties:
       signal_transport: HEAT_SIGNAL
       input_values:
-        MASTERIPS: {get_attr: [masters, attributes, first_address]}
+        MASTERIP: {get_attr: [master, first_address]}
       servers: {get_attr: [minion_servers, attributes, show, id]}
       config: {get_resource: minion_shared_config }
 
@@ -232,10 +238,13 @@ outputs:
     value: {get_attr: [minion_deploys, deploy_stderrs]}
   md_codes:
     value: {get_attr: [minion_deploys, deploy_status_codes]}
-  masters_list:
-    value: {get_attr: [masters, attributes, show, id]}
-  masters_ips:
-    value: {get_attr: [masters, attributes, first_address]}
+  master_list:
+    value: {get_attr: [master, show, id]}
+  master_ips:
+    value: {get_attr: [master, first_address]}
+  master_public_ip:
+    description: Floating IP address of kube-master in public network
+    value: { get_attr: [floating_ip, floating_ip_address ] }
   minion_list:
     value: {get_attr: [minion_servers, attributes, show, id]}
   minion_ips:
