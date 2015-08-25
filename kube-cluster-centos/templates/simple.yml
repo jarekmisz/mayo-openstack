@@ -1,0 +1,47 @@
+heat_template_version: 2013-05-23
+
+parameters:
+  key_name:
+    type: string
+    default: heat_key
+  flavor:
+    type: string
+    default: m1.small
+  image:
+    type: string
+    default: ubuntu-software-config
+  private_net_id:
+    type: string
+    description: ID of private network into which servers get deployed
+  private_subnet_id:
+    type: string
+    description: ID of private sub network into which servers get deployed    
+
+resources:
+  server_a:
+    type: OS::Nova::Server
+    properties:
+      image:
+        get_param: image
+      flavor:
+        get_param: flavor
+      key_name:
+        get_param: key_name
+      user_data_format: RAW
+      user_data: |
+        #!/bin/bash
+        set -x
+        #Fix sshd to allow password access. The service will be restarted in the recipe.
+        sed -i 's/^PasswordAuthentication.*/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+        service ssh restart
+        echo "ssh service restarted..."
+
+      networks:
+        - port: { get_resource: server_port }
+  
+  server_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: private_net_id }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet_id }
