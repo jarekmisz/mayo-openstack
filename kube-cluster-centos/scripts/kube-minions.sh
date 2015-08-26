@@ -1,11 +1,10 @@
 #!/bin/bash
 set -x
-#DNSSERVER="129.176.199.5"
-#DNSDOMAIN="mayo.edu"
+source /etc/openstack-vars.conf
 #exec 3>&1 4>&2 >minion.log 2>&1
 export THISHOSTIP=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
 #Set the hostname
-HOSTNAME="host-$(echo $THISHOSTIP | sed 's/\./\-/g')"
+export HOSTNAME="host-$(echo $THISHOSTIP | sed 's/\./\-/g')"
 hostname $HOSTNAME
 hostnamectl set-hostname $HOSTNAME
 # Fix the name resolution
@@ -56,8 +55,44 @@ then
 fi
 EOF
            
+
+cat << EOF > /etc/yum.repos.d/virt7-docker-common-candidate.repo
+[virt7-docker-common-candidate]
+name=virt7-docker-common-candidate
+baseurl=http://cbs.centos.org/repos/virt7-docker-common-candidate/x86_64/os/
+gpgcheck=0
+EOF
+
+yum -y install docker docker-logrotate kubernetes etcd flannel
+
 echo $MASTERIP
-IPS=$(echo $MASTERIP | sed 's/\"//g') 
-echo $IPS
+MASTERIPS=$(echo $MASTERIP | sed 's/\"//g') 
+echo $MASTERIP
+MASTERNAME="host-$(echo $MASTERIP | sed 's/\./\-/g')"
+				
+sed -i "s/127.0.0.1:8080/$MASTERNAME:8080/g" /etc/kubernetes/config
+
+sed -i "s/127.0.0.1:4001/$MASTERNAME:4001/g" /etc/sysconfig/flanneld
+sed -i 's\^FLANNEL_ETCD_KEY=.*\FLANNEL_ETCD_KEY="/flannel/network"\g' /etc/sysconfig/flanneld
+
+# Configure the Kubelet Service
+sed -i 's/^KUBELET_ADDRESS=.*/KUBELET_ADDRESS="--address=0.0.0.0"/g' /etc/kubernetes/kubelet
+sed -i 's/^KUBELET_HOSTNAME=.*/KUBELET_HOSTNAME=/g' /etc/kubernetes/kubelet
+sed -i 's\^KUBELET_API_SERVER=.*\KUBELET_API_SERVER="--api_servers=http://kube-master:8080"\g' /etc/kubernetes/kubelet
+
+service=flanneld
+systemctl enable $service
+systemctl restart $service
+systemctl status $service 
+
+sleep 10
+
+for service in kube-proxy kubelet docker; do
+    systemctl enable $service
+    systemctl restart $service
+    systemctl status $service 
+done
+
+
 #restore stdout and stderr
 #exec 1>&3 2>&4
