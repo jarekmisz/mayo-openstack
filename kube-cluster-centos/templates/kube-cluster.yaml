@@ -46,7 +46,7 @@ resources:
         cat <<EOF > /etc/openstack-vars.conf
         DNSSERVER=$DNSSERVER
         DNSDOMAIN=$DNSDOMAIN
-        MINIONIPS=$MINIONIPS
+        MINIONIPS="$MINIONIPS"
         EOF
    
   deploys:
