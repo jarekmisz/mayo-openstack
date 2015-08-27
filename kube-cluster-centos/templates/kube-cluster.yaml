@@ -48,6 +48,21 @@ resources:
         MINIONIPS: {get_attr: [minion_servers, attributes, first_address]}
       server: {get_resource: master }
       config: {get_resource: shared_config }
+  
+  skydns_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: 
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/azure-scripts/v2.0/centos-kube-cluster/create-skydns-pod.sh'
+   
+  skydns_deploy:
+    type: OS::Heat::SoftwareDeployment
+    depends_on: minion_deploys
+    properties:
+      signal_transport: HEAT_SIGNAL
+      server: {get_resource: master }
+      config: {get_resource: skydns_config }
 
   master:
     type: OS::Nova::Server
@@ -88,6 +103,22 @@ resources:
         MASTERIP: {get_attr: [master, first_address]}
       servers: {get_attr: [minion_servers, attributes, show, id]}
       config: {get_resource: minion_shared_config }
+
+  minion_skydns_config:
+    type: OS::Heat::SoftwareConfig
+    properties:
+      group: script
+      config: 
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/azure-scripts/v2.0/centos-kube-cluster/setup-skydns-on-minions.sh'
+
+   
+  minion_skydns_deploys:
+    type: OS::Heat::SoftwareDeployments
+    depends_on: skydns_deploy
+    properties:
+      signal_transport: HEAT_SIGNAL
+      servers: {get_attr: [minion_servers, attributes, show, id]}
+      config: {get_resource: minion_skydns_config }
 
   minion_servers:
     type: OS::Heat::ResourceGroup
