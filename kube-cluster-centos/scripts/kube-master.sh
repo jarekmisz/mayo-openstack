@@ -96,9 +96,11 @@ list=$list$MINIONHOSTNAME','
 done
 # remove the trailing ,
 list=$(echo $list | sed -e 's/,$//')
-sed -i 's/^# defaults from config and apiserver.*/KUBELET_ADDRESSES="--machines='$list'"/g' /etc/kubernetes/controller-manager
+echo 'KUBELET_ADDRESSES="--machines='$list'"' >> /etc/kubernetes/controller-manager
+# Replaced by above
+#sed -i 's/^# defaults from config and apiserver.*/KUBELET_ADDRESSES="--machines='$list'"/g' /etc/kubernetes/controller-manager
 
-for service in etcd kube-apiserver kube-controller-manager kube-scheduler; do 
+for service in etcd kube-apiserver kube-controller-manager kube-scheduler kube-proxy; do 
     systemctl enable $service
     systemctl restart $service
     systemctl status $service 

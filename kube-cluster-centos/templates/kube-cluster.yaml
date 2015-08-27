@@ -37,17 +37,8 @@ resources:
           default: '129.176.199.5'
         - name: DNSDOMAIN
           default: 'mayo.edu'  
-      config: |
-        #!/bin/bash
-        set -x
-        echo $MINONIPS
-        echo $DNSSERVER
-        echo $DNSDOMAIN
-        cat <<EOF > /etc/openstack-vars.conf
-        DNSSERVER=$DNSSERVER
-        DNSDOMAIN=$DNSDOMAIN
-        MINIONIPS="$MINIONIPS"
-        EOF
+      config: 
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/master/kube-cluster-centos/scripts/kube-master.sh'
    
   deploys:
     type: OS::Heat::SoftwareDeployment
@@ -85,17 +76,8 @@ resources:
           default: '129.176.199.5'
         - name: DNSDOMAIN
           default: 'mayo.edu'  
-      config: |
-        #!/bin/bash
-        set -x
-        echo $MASTERIP
-        echo $DNSSERVER
-        echo $DNSDOMAIN
-        cat <<EOF > /etc/openstack-vars.conf
-        DNSSERVER=$DNSSERVER
-        DNSDOMAIN=$DNSDOMAIN
-        MASTERIP=$MASTERIP
-        EOF
+      config: 
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/master/kube-cluster-centos/scripts/kube-minions.sh'
 
    
   minion_deploys:
