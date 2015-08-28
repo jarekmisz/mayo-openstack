@@ -62,8 +62,11 @@ name=virt7-docker-common-candidate
 baseurl=http://cbs.centos.org/repos/virt7-docker-common-candidate/x86_64/os/
 gpgcheck=0
 EOF
+# As of 8/28/15 a temporary fix is required since docker in the virt7 repos is broken. The pull never ends.
+# yum -y install docker docker-logrotate kubernetes etcd flannel
+yum -y install docker-1.7.1-108.el7.centos  docker-logrotate-1.7.1-108.el7.centos  docker-selinux-1.7.1-108.el7.centos
+yum -y install kubernetes
 
-yum -y install docker docker-logrotate kubernetes etcd flannel
 
 echo $MASTERIP
 MASTERIPS=$(echo $MASTERIP | sed 's/\"//g') 
