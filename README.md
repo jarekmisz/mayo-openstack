@@ -11,6 +11,9 @@ The naming convention:
 * kube-master
 * kube-minion0 .. kube-minion9
 
+These names will appear in OpenStack dashboard and on OpenStack CLI output. Note that the hostnames will be assigned by dnsmasq at the deployment time. See the discussion below.
+
+
 Couple comments on networking:
 There are several layers of networking:
 
