@@ -50,15 +50,39 @@ These names assigned by dnsmasq are used by the scripts invoked at cluster deplo
 Flannel will asign one of the subnets to a node in the kubernetes cluster. Something like: 10.254.x.0. Consequently, the docker containers that get spinned up on that node will get IP addresses on that subnet. Flannel will route between the subnets so that a solution may consist of multiple pods that reside on multiple nodes (minions).
 
 The template expects the following parameters:
+  key_name:
+    type: string
+    description: keypair to enable SSH access to the instance.
+    default: heat_key
+  image:
+    type: string
+    description: ID of the image to use for the instance to be created.
+    default: centos7-software-config-v3
+  flavor:
+    type: string
+    description: Type of the instance to be created.
+    default: m1.small
+  private_net:
+    type: string
+    description: private network name into which servers get deployed
+    default: private
+  public_net:
+    type: string
+    description: public network name for which floating IP addresses will be allocated
+    default: public
+  minion_count:
+    type: number
+    default: 2
+
 
 | Name   | Description | Default Value |
 |:--- |:---|:---|
-| adminUsername  | Administrator user name used when provisioning virtual machines  | |
-| adminPassword  | Administrator password used when provisioning virtual machines  | |
-| newStorageAccountName | Unique namespace for a new storage account where the virtual machine's disks will be placed | |
-| numberOfInstances | Number of kubertnetes nodes (minions) to be created. The current maximum is set to 10. It can be easily increased by editing the template | 2 |
-| vmSize | Size of the Virtual Machine | Standard_D2 |
-| newZoneName | The name of the DNS zone to be created. To use the Azure assigned DNS server you need to keep the default setting | reddog.microsoft.com |
-| newRecordNamePrefix | The hostname prefix of the DNS record to be created.  The name is relative to the zone, not the FQDN | kube- |
+| key_name  | keypair to enable SSH access to the instance  | heat_key |
+| image  | ID of the image to use for the instance to be created  | centos7-software-config-v3 |
+| flavor | Type of the instance to be created | m1.small |
+| private_net | Private network name into which servers get deployed | private |
+| public_net | Spublic network name for which floating IP addresses will be allocated | public |
+| minion_count | Number of minions to be created | 2 |
+
 
 
