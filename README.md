@@ -22,6 +22,7 @@ The IP addresses of the physical nodes depend on the specific installation.
 One possible configuration is shown below:
 
 | Network Name | Provider Network Type | Subnet Name | IP Addresses | Allocation Pools | 
+|:--- |:---|:---|:---|:---|
 | private | vxlan | private-subnet |  172.27.1.0/24 | "start": "172.27.1.2", "end": "172.27.1.254" |
 | public | vxlan | public-subnet | 10.146.112.0/22 | "start": "10.146.112.16", "end": "10.146.112.31" |
 
