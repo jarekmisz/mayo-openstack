@@ -38,7 +38,7 @@ resources:
         - name: DNSDOMAIN
           default: 'mayo.edu'  
       config: 
-        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/v2.0/kube-cluster-centos/scripts/kube-master.sh'
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/master/kube-cluster-centos/scripts/kube-master.sh'
    
   deploys:
     type: OS::Heat::SoftwareDeployment
@@ -92,7 +92,7 @@ resources:
         - name: DNSDOMAIN
           default: 'mayo.edu'  
       config: 
-        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/v2.0/kube-cluster-centos/scripts/kube-minions.sh'
+        get_file: 'https://raw.githubusercontent.com/jarekmisz/mayo-openstack/master/kube-cluster-centos/scripts/kube-minions.sh'
 
    
   minion_deploys:
