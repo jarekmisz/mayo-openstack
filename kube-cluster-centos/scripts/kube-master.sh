@@ -63,8 +63,9 @@ name=virt7-docker-common-candidate
 baseurl=http://cbs.centos.org/repos/virt7-docker-common-candidate/x86_64/os/
 gpgcheck=0
 EOF
-
-yum -y install docker docker-logrotate kubernetes etcd flannel
+# As of 10/2/15 a temporary fix is required since docker in the virt7 repos does not install. There missing dependencies.
+yum -y install docker-1.7.1-108.el7.centos  docker-logrotate-1.7.1-108.el7.centos  docker-selinux-1.7.1-108.el7.centos
+yum -y install kubernetes etcd flannel
 #Common config
 	
 sed -i "s/127.0.0.1:8080/$HOSTNAME:8080\g" /etc/kubernetes/config
