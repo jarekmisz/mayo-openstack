@@ -5,6 +5,8 @@ wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/examples/gue
 wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/examples/guestbook/redis-slave-service.yaml
 wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/examples/guestbook/frontend-controller.yaml
 wget https://raw.githubusercontent.com/kubernetes/kubernetes/master/examples/guestbook/frontend-service.yaml
+sed -i 's\^  # type:.*\  type: NodePort\g' frontend-service.yaml
+awk '/    \- port: 80/{print $0 RS "      nodePort: 30080";next}1' frontend-service.yaml > tmp && mv tmp frontend-service.yaml
 kubectl create -f ./redis-master-controller.yaml
 kubectl create -f ./redis-master-service.yaml
 kubectl create -f ./redis-slave-controller.yaml
